@@ -10,3 +10,27 @@
         </div>
         <button class="btn btn-primary" type="submit">confirmation</button>
     </form>
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """Register user"""
+    if request.method == "POST":
+        if not request.form.get("username"):
+            return apology("missing username")
+        if not request.form.get("password"):
+            return apology("missing password")
+        if not request.form.get("confirmation"):
+            return apology("missing confirmation")
+        if request.form.get("password") != request.form.get("confirmation"):
+            return apology("unmatch passwords")
+        if db.execute("SELECT username FROM users WHERE username=?", request.form.get("username")):
+            return apology("username in use")
+
+        hash_password = generate_password_hash(request.form.get("password"))
+        username = request.form.get("username")
+        db.execute("INSERT INTO users (username,hash) VALUES(?,?)", username, hash_password)
+
+        return redirect("/login")
+    else:
+        return render_template("register.html")
